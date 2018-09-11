@@ -1,0 +1,42 @@
+---
+- name: get minikube version
+  shell: "minikube version | cut -d ' ' -f 3"
+  register: minikube_result
+  ignore_errors: yes
+
+- name: set minikube current version fact
+  set_fact:
+      minikube_current_version: "{{ minikube_result.stdout|default('')|replace('v','') }}"
+
+- name: debug minikube_current_version
+  debug:
+    var: minikube_current_version
+
+- name: get latest stable minikube tag
+  uri:
+    url: "{{ minikube_release_api_url }}"
+  ignore_errors: yes
+  register: minikube_github_result
+  when: minikube_version == 'latest'
+
+- name: set minikube version fact
+  set_fact:
+       minikube_version: "{{ minikube_github_result.json.name|default(minikube_default_version)|replace('v','') }}"
+  when: minikube_version == 'latest'
+
+- name: debug minikube_version
+  debug:
+    var: minikube_version
+
+- name: set minikube version fact
+  set_fact:
+    minikube_version: "{{ minikube_default_version }}"
+  when: minikube_version == '' or minikube_version is none
+
+- name: "download minikube binary {{ minikube_version }}"
+  get_url:
+      url: "{{ minikube_base_url }}/v{{ minikube_version }}/minikube-linux-amd64"
+      dest: /usr/local/bin/minikube
+      mode: 0755
+      force: yes
+  when: minikube_current_version != minikube_version
