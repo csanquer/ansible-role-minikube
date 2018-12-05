@@ -8,10 +8,6 @@
   set_fact:
       minikube_current_version: "{{ minikube_result.stdout|default('')|replace('v','') }}"
 
-- name: debug minikube_current_version
-  debug:
-    var: minikube_current_version
-
 - name: get latest stable minikube tag
   uri:
     url: "{{ minikube_release_api_url }}"
@@ -19,16 +15,12 @@
   register: minikube_github_result
   when: minikube_version == 'latest'
 
-- name: set minikube version fact
+- name: set minikube version fact to latest
   set_fact:
        minikube_version: "{{ minikube_github_result.json.name|default(minikube_default_version)|replace('v','') }}"
   when: minikube_version == 'latest'
 
-- name: debug minikube_version
-  debug:
-    var: minikube_version
-
-- name: set minikube version fact
+- name: set minikube version fact to default
   set_fact:
     minikube_version: "{{ minikube_default_version }}"
   when: minikube_version == '' or minikube_version is none
