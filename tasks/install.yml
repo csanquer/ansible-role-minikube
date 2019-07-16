@@ -1,5 +1,5 @@
 ---
-- name: get minikube version
+- name: get minikube version # noqa 301
   shell: "minikube version | cut -d ' ' -f 3"
   register: minikube_result
   ignore_errors: yes
@@ -23,7 +23,7 @@
 - name: set minikube version fact to default
   set_fact:
     minikube_version: "{{ minikube_default_version }}"
-  when: minikube_version == '' or minikube_version is none
+  when: not minikube_version
 
 - name: "download minikube binary {{ minikube_version }}"
   get_url:
